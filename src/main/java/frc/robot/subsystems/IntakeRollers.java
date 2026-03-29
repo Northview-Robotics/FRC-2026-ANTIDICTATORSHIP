@@ -45,8 +45,8 @@ public class IntakeRollers extends SubsystemBase{
             Seconds.of(5), 
             (state) -> Logger.recordOutput("Intake Roller State", state.toString())), 
             
-            new SysIdRoutine.Mechanism(this::setVoltage, null, this)
-        );
+        new SysIdRoutine.Mechanism(this::setVoltage, null, this)
+    );
 
     public IntakeRollers(int canid, double gearRatio){
         motor = new TalonFX(canid);
@@ -133,5 +133,4 @@ public class IntakeRollers extends SubsystemBase{
             () -> setVelocity(velocity), 
             () -> setVoltage(Volts.zero()));
     }
-    
 }

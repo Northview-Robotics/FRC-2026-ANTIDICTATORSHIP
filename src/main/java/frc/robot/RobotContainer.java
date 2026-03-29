@@ -4,11 +4,13 @@
 
 package frc.robot;
 
+import static edu.wpi.first.units.Units.Degrees;
 import static edu.wpi.first.units.Units.Volts;
 
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
+import frc.robot.subsystems.IntakeAngle;
 import frc.robot.subsystems.IntakeRollers;
 
 public class RobotContainer {
@@ -16,6 +18,7 @@ public class RobotContainer {
   private final CommandXboxController operatorCtrl = new CommandXboxController(1);
 
   private final IntakeRollers intakeRollers = new IntakeRollers(Constants.IntakeRollersConstants.intakeRollerID, Constants.IntakeRollersConstants.gearRatio);
+  private final IntakeAngle intakeAngle = new IntakeAngle(Constants.IntakePivotConstants.intakePivotID, Constants.IntakePivotConstants.gearRatio);
 
   public RobotContainer() {
     configureBindings();
@@ -25,6 +28,9 @@ public class RobotContainer {
     //Example Intake Roller Bindings
     operatorCtrl.a().whileTrue(intakeRollers.setVoltageCmd(Volts.of(6)));
     operatorCtrl.b().whileTrue(intakeRollers.setVoltageCmd(Volts.of(-6)));
+    
+    operatorCtrl.x().onTrue(intakeAngle.setPositionCmd(Degrees.of(0)));
+    operatorCtrl.y().onTrue(intakeAngle.setPositionCmd(Degrees.of(90)));
   }
 
   public Command getAutonomousCommand() {
