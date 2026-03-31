@@ -12,7 +12,6 @@ import java.util.function.Supplier;
 import org.littletonrobotics.junction.AutoLogOutput;
 import org.littletonrobotics.junction.Logger;
 
-import com.fasterxml.jackson.databind.annotation.JsonAppend.Attr;
 import com.revrobotics.PersistMode;
 import com.revrobotics.ResetMode;
 import com.revrobotics.spark.ClosedLoopSlot;

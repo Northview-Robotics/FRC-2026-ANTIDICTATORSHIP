@@ -2,7 +2,6 @@ package frc.robot;
 
 import static edu.wpi.first.units.Units.Degrees;
 import static edu.wpi.first.units.Units.Minute;
-import static edu.wpi.first.units.Units.Rotation;
 import static edu.wpi.first.units.Units.Rotations;
 import static edu.wpi.first.units.Units.RotationsPerSecond;
 import static edu.wpi.first.units.Units.RotationsPerSecondPerSecond;
