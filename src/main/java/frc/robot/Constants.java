@@ -59,4 +59,16 @@ public final class Constants {
         public static final Velocity<AngularAccelerationUnit> jerk = Rotations.per(Minute).per(Second).per(Second).of(12000);
     }
 
+    public final static class ShooterWheelConstants {
+        public static final int flywheelID = 42;
+        public static final double gearRatio = 1.0/1.0;
+
+        public static final AngularVelocity cruiseVelocity = Rotations.per(Minute).of(3000);
+        // TODO: The old code used RP/s^2 so im using it here. Maybe change this
+        public static final AngularAcceleration acceleration = Rotations.per(Second).per(Second).of(2500);
+        public static final Velocity<AngularAccelerationUnit> jerk = Rotations.per(Minute).per(Second).per(Second).of(12000);
+
+        public static final AngularVelocity shootingTolerance = Rotations.per(Minute).of(50);
+    }
+
 }
