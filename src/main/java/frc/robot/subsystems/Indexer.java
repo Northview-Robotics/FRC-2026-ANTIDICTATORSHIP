@@ -1,6 +1,5 @@
 package frc.robot.subsystems;
 
-import static edu.wpi.first.units.Units.Amps;
 import static edu.wpi.first.units.Units.Seconds;
 import static edu.wpi.first.units.Units.Volts;
 
@@ -18,6 +17,7 @@ import com.ctre.phoenix6.signals.NeutralModeValue;
 import edu.wpi.first.units.measure.AngularVelocity;
 import edu.wpi.first.units.measure.Current;
 import edu.wpi.first.units.measure.Voltage;
+import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine;
@@ -34,6 +34,8 @@ public class Indexer extends SubsystemBase{
     private final MotionMagicVelocityVoltage velCtrl = new MotionMagicVelocityVoltage(0)
         .withAcceleration(Constants.IndexerConstants.acceleration);
 
+    private double timeout = 0;
+
     private SysIdRoutine sysIdRoutine = new SysIdRoutine(
         new SysIdRoutine.Config(
             null, 
@@ -48,8 +50,10 @@ public class Indexer extends SubsystemBase{
         motor = new TalonFX(canid);
 
         motorConfig.CurrentLimits
-            .withSupplyCurrentLimit(Amps.of(40))
-            .withSupplyCurrentLimitEnable(true);
+            .withSupplyCurrentLimit(Constants.IndexerConstants.supplyCurrentLimit)
+            .withStatorCurrentLimit(Constants.IndexerConstants.statorCurrentLimit)
+            .withSupplyCurrentLimitEnable(true)
+            .withStatorCurrentLimitEnable(true);
 
         motorConfig.Slot0
                 .withKP(0.0)
@@ -101,7 +105,14 @@ public class Indexer extends SubsystemBase{
     }
 
     public void setVelocity(AngularVelocity velocity){
-        motor.setControl(velCtrl.withVelocity(velocity));
+        if(motor.getTorqueCurrent().getValueAsDouble() > Constants.IndexerConstants.ejectCurrent){
+            timeout = Timer.getFPGATimestamp();
+        }
+        if(Timer.getFPGATimestamp() - timeout > Constants.IndexerConstants.ejectTimeout){
+            motor.setControl(velCtrl.withVelocity(velocity));
+        } else {
+            motor.setControl(velCtrl.withVelocity(Constants.IndexerConstants.ejectRPM));
+        }
     }
 
     public Command setSysIdDynamicCmd(Direction direction){

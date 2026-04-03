@@ -16,10 +16,9 @@ import com.revrobotics.PersistMode;
 import com.revrobotics.ResetMode;
 import com.revrobotics.spark.ClosedLoopSlot;
 import com.revrobotics.spark.FeedbackSensor;
+import com.revrobotics.spark.SparkBase.ControlType;
 import com.revrobotics.spark.SparkClosedLoopController;
 import com.revrobotics.spark.SparkMax;
-import com.revrobotics.spark.SparkBase.ControlType;
-import com.revrobotics.spark.SparkLowLevel.MotorType;
 import com.revrobotics.spark.config.SparkMaxConfig;
 
 import edu.wpi.first.math.controller.ArmFeedforward;
@@ -29,13 +28,12 @@ import edu.wpi.first.units.measure.AngularVelocity;
 import edu.wpi.first.units.measure.Current;
 import edu.wpi.first.units.measure.Voltage;
 import edu.wpi.first.wpilibj2.command.Command;
-import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine;
 import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine.Direction;
 import frc.robot.Constants;
 
-public class IntakeAngle extends SubsystemBase{
+public class Hood extends SubsystemBase{
     
     private final SparkMax motor;
     private final SparkMaxConfig config = new SparkMaxConfig();
@@ -51,19 +49,19 @@ public class IntakeAngle extends SubsystemBase{
         new SysIdRoutine.Mechanism(this::setVoltage, null, this)
     );
 
-    public IntakeAngle(int canId, double gearRatio){
-        motor = new SparkMax(canId, MotorType.kBrushless);
+    public Hood(int canid, double gearRatio){
+        motor = new SparkMax(canid, com.revrobotics.spark.SparkBase.MotorType.kBrushless);
         closedLoopController = motor.getClosedLoopController();
-        
+
         config.encoder
             .velocityConversionFactor(1.0/gearRatio)
             .positionConversionFactor(1.0/gearRatio);
-        
+
         //Don't use for actual PID Calculations, only for config values.
-        PIDController velocityPID = Constants.IntakePivotConstants.velocityPID;
-        PIDController positionPID = Constants.IntakePivotConstants.positionPID;
-        ArmFeedforward velocityFF = Constants.IntakePivotConstants.velocityFF;
-        ArmFeedforward positionFF = Constants.IntakePivotConstants.positionFF;
+        PIDController velocityPID = Constants.HoodConstants.velocityPID;
+        PIDController positionPID = Constants.HoodConstants.positionPID;
+        ArmFeedforward velocityFF = Constants.HoodConstants.velocityFF;
+        ArmFeedforward positionFF = Constants.HoodConstants.positionFF;
 
         //Velocity Control in Slot 0
         config.closedLoop
@@ -80,15 +78,15 @@ public class IntakeAngle extends SubsystemBase{
         
         config.closedLoop
             .maxMotion
-            .cruiseVelocity(Constants.IntakePivotConstants.cruiseVelocity.in(Rotations.per(Minute)), ClosedLoopSlot.kSlot1)
-            .maxAcceleration(Constants.IntakePivotConstants.maxAcceleration.in(Rotations.per(Minute).per(Second)), ClosedLoopSlot.kSlot1)
-            .allowedProfileError(Constants.IntakePivotConstants.allowedError.in(Rotations), ClosedLoopSlot.kSlot1);
+            .cruiseVelocity(Constants.HoodConstants.cruiseVelocity.in(Rotations.per(Minute)), ClosedLoopSlot.kSlot1)
+            .maxAcceleration(Constants.HoodConstants.maxAcceleration.in(Rotations.per(Minute).per(Second)), ClosedLoopSlot.kSlot1)
+            .allowedProfileError(Constants.HoodConstants.allowedError.in(Rotations), ClosedLoopSlot.kSlot1);
 
         //TODO When setting current limits, set ResetMode to RestMode.kNoResetSafeParameters
         motor.configure(config, ResetMode.kResetSafeParameters, PersistMode.kPersistParameters);
         
         //TODO FIND THE REAL RESET VALUE AND SET IT IN CONSTANTS
-        motor.getEncoder().setPosition(Constants.IntakePivotConstants.resetAngle.in(Rotations));
+        motor.getEncoder().setPosition(Constants.HoodConstants.resetAngle.in(Rotations));
     }
 
     @AutoLogOutput
@@ -113,24 +111,6 @@ public class IntakeAngle extends SubsystemBase{
 
     public boolean isAtAngle(Angle targetAngle){
         return Math.abs(getPosition().in(Rotations) - targetAngle.in(Rotations)) < Constants.IntakePivotConstants.allowedError.in(Rotations);
-    }
-
-    public Command agitateCmd() {
-        return Commands.repeatingSequence(
-            setPositionCmd(Constants.IntakePivotConstants.highAgitateAngle).until(() -> isAtAngle(Constants.IntakePivotConstants.highAgitateAngle)),
-            setPositionCmd(Constants.IntakePivotConstants.lowAgitateAngle).until(() -> isAtAngle(Constants.IntakePivotConstants.lowAgitateAngle))
-        ).finallyDo(() -> setVoltage(Volts.zero()));
-    }
-    public Command deployIntake(){
-        return setPositionCmd(Constants.IntakePivotConstants.deployedAngle).until(() -> isAtAngle(Constants.IntakePivotConstants.deployedAngle));
-    }
-
-    public Command stowIntake(){
-        return setPositionCmd(Constants.IntakePivotConstants.stowedAngle).until(() -> isAtAngle(Constants.IntakePivotConstants.stowedAngle));
-    }
-
-    public void stopMotor(){
-        motor.setVoltage(Volts.zero());
     }
 
     public void setVoltage(Voltage volts){
@@ -162,18 +142,6 @@ public class IntakeAngle extends SubsystemBase{
     public Command setVoltageCmd(Supplier<Voltage> volts){
         return this.runEnd(
             () -> setVoltage(volts.get()), 
-            () -> setVoltage(Volts.zero()));
-    }
-
-    public Command setVelocityCmd(AngularVelocity velocity){
-        return this.runEnd(
-            () -> setVelocity(velocity), 
-            () -> setVoltage(Volts.zero()));
-    }
-
-    public Command setVelocityCmd(Supplier<AngularVelocity> velocity){
-        return this.runEnd(
-            () -> setVelocity(velocity.get()), 
             () -> setVoltage(Volts.zero()));
     }
 

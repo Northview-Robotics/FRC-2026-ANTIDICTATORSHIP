@@ -14,7 +14,6 @@ import com.ctre.phoenix6.signals.FeedbackSensorSourceValue;
 import com.ctre.phoenix6.signals.InvertedValue;
 import com.ctre.phoenix6.signals.NeutralModeValue;
 
-import edu.wpi.first.units.measure.Angle;
 import edu.wpi.first.units.measure.AngularVelocity;
 import edu.wpi.first.units.measure.Current;
 import edu.wpi.first.units.measure.Voltage;
@@ -24,47 +23,33 @@ import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine;
 import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine.Direction;
 import frc.robot.Constants;
 
-public class IntakeRollers extends SubsystemBase{
-    
-    //Motor
-    private final TalonFX motor;
+
+public class Feeder extends SubsystemBase {
+    private TalonFX motor;
     private TalonFXConfiguration motorConfig = new TalonFXConfiguration();
 
-    //Control Requests
     private final VoltageOut voltCtrl = new VoltageOut(0);
-    private final MotionMagicVelocityVoltage velCtrl = 
-        new MotionMagicVelocityVoltage(0)
-        .withAcceleration(Constants.IntakeRollersConstants.acceleration);
+    private final MotionMagicVelocityVoltage velCtrl = new MotionMagicVelocityVoltage(0);
 
-    private final SysIdRoutine sysIdRoutine = new SysIdRoutine(
+    private SysIdRoutine sysIdRoutine = new SysIdRoutine(
         new SysIdRoutine.Config(
             null, 
             Volts.of(4), 
             Seconds.of(5), 
-            (state) -> Logger.recordOutput("Intake Roller State", state.toString())), 
+            (state) -> Logger.recordOutput("Feeder State", state.toString())), 
             
-        new SysIdRoutine.Mechanism(this::setVoltage, null, this)
-    );
+            new SysIdRoutine.Mechanism(this::setVoltage, null, this)
+        ); 
 
-    public IntakeRollers(int canid, double gearRatio){
+    public Feeder(int canid, double gearRatio){
         motor = new TalonFX(canid);
 
         motorConfig.CurrentLimits
-            //TODO Adjust Current Limit based on irl intake rollers
-            .withSupplyCurrentLimit(Constants.IntakeRollersConstants.supplyCurrentLimit)
-            .withStatorCurrentLimit(Constants.IntakeRollersConstants.statorCurrentLimit)
+            .withSupplyCurrentLimit(Constants.FeederConstants.supplyCurrentLimit)
+            .withStatorCurrentLimit(Constants.FeederConstants.statorCurrentLimit)
             .withSupplyCurrentLimitEnable(true)
             .withStatorCurrentLimitEnable(true);
-        
-        motorConfig.MotorOutput
-            .withNeutralMode(NeutralModeValue.Brake)
-            //TODO Adjust Inverted based on irl intake rollers
-            .withInverted(InvertedValue.Clockwise_Positive);
-        
-        motorConfig.Feedback
-            .withSensorToMechanismRatio(gearRatio)
-            .withFeedbackSensorSource(FeedbackSensorSourceValue.RotorSensor);
-        
+
         motorConfig.Slot0
                 .withKP(0.0)
                 .withKI(0.0)
@@ -73,10 +58,14 @@ public class IntakeRollers extends SubsystemBase{
                 .withKV(0.0)
                 .withKA(0.0);
 
-        motorConfig.MotionMagic
-            .withMotionMagicCruiseVelocity(Constants.IntakeRollersConstants.cruiseVelocity)
-            .withMotionMagicAcceleration(Constants.IntakeRollersConstants.acceleration)
-            .withMotionMagicJerk(Constants.IntakeRollersConstants.jerk);
+        motorConfig.MotorOutput
+            .withNeutralMode(NeutralModeValue.Brake)
+            //TODO Adjust Inverted based on irl indexer
+            .withInverted(InvertedValue.Clockwise_Positive);
+
+        motorConfig.Feedback
+            .withSensorToMechanismRatio(gearRatio)
+            .withFeedbackSensorSource(FeedbackSensorSourceValue.RotorSensor);
 
         motor.getConfigurator().apply(motorConfig);
     }
@@ -84,6 +73,11 @@ public class IntakeRollers extends SubsystemBase{
     @AutoLogOutput
     public Voltage getVoltage(){
         return motor.getMotorVoltage().getValue();
+    }
+
+    @AutoLogOutput
+    public AngularVelocity getVelocity(){
+        return motor.getVelocity().getValue();
     }
 
     @AutoLogOutput
@@ -96,26 +90,13 @@ public class IntakeRollers extends SubsystemBase{
         return motor.getSupplyCurrent().getValue();
     }
 
-    @AutoLogOutput
-    public AngularVelocity getVelocity(){
-        return motor.getVelocity().getValue();
-    }
-
-    @AutoLogOutput
-    public Angle getPosition(){
-        return motor.getPosition().getValue();
-    }
-
-    public void stop(){
-        motor.setControl(voltCtrl.withOutput(Volts.zero()));
-    }
-
-    public void setVoltage(Voltage volts){
-        motor.setControl(voltCtrl.withOutput(volts));
+    public void setVoltage(Voltage voltage){
+        motor.setControl(voltCtrl.withOutput(voltage));
     }
 
     public void setVelocity(AngularVelocity velocity){
         motor.setControl(velCtrl.withVelocity(velocity));
+
     }
 
     public Command setSysIdDynamicCmd(Direction direction){
@@ -126,15 +107,15 @@ public class IntakeRollers extends SubsystemBase{
         return sysIdRoutine.quasistatic(direction);
     }
 
-    public Command setVoltageCmd(Voltage volts){
+    public Command setVoltageCmd(Voltage voltage){
         return this.runEnd(
-            () -> setVoltage(volts), 
-            () -> setVoltage(Volts.zero()));
+            () -> setVoltage(voltage),
+            () -> setVoltage(Volts.of(0)));
     }
 
     public Command setVelocityCmd(AngularVelocity velocity){
         return this.runEnd(
-            () -> setVelocity(velocity), 
-            () -> setVoltage(Volts.zero()));
+            () -> setVelocity(velocity),
+            () -> setVoltage(Volts.of(0)));
     }
 }

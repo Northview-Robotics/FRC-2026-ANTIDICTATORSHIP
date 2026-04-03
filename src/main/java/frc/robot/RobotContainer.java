@@ -12,7 +12,6 @@ import java.io.File;
 
 import com.pathplanner.lib.auto.AutoBuilder;
 
-import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.wpilibj.Filesystem;
 import edu.wpi.first.wpilibj.smartdashboard.SendableChooser;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
@@ -22,6 +21,8 @@ import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
 import frc.robot.Constants.SwerveConstants;
 import frc.robot.subsystems.Drive;
+import frc.robot.subsystems.Feeder;
+import frc.robot.subsystems.Hood;
 import frc.robot.subsystems.Indexer;
 import frc.robot.subsystems.IntakeAngle;
 import frc.robot.subsystems.IntakeRollers;
@@ -38,8 +39,13 @@ public class RobotContainer {
   private final IntakeRollers intakeRollers = new IntakeRollers(Constants.IntakeRollersConstants.intakeRollerID, Constants.IntakeRollersConstants.gearRatio);
   private final IntakeAngle intakeAngle = new IntakeAngle(Constants.IntakePivotConstants.intakePivotID, Constants.IntakePivotConstants.gearRatio);
   private final Indexer indexer = new Indexer(Constants.IndexerConstants.indexerID, Constants.IndexerConstants.gearRatio);
-  private final ShooterWheel shooterWheel = new ShooterWheel(Constants.ShooterWheelConstants.flywheelID,
-      Constants.ShooterWheelConstants.gearRatio);
+  private final Feeder feeder = new Feeder(Constants.FeederConstants.feederID, Constants.FeederConstants.gearRatio);
+  private final ShooterWheel shooterWheel = new ShooterWheel(Constants.ShooterWheelConstants.shooterMotor1ID,
+                                                          Constants.ShooterWheelConstants.shooterMotor2ID, 
+                                                          Constants.ShooterWheelConstants.shooterMotor3ID, 
+                                                          Constants.ShooterWheelConstants.shooterMotor4ID,
+                                                          Constants.ShooterWheelConstants.gearRatio);
+  private final Hood hood = new Hood(Constants.HoodConstants.hoodID, Constants.HoodConstants.gearRatio);
 
   private File directory = new File(Filesystem.getDeployDirectory(),"swerve2");
   private final Drive drivetrain = new Drive(directory);
@@ -57,34 +63,6 @@ public class RobotContainer {
 
   SwerveInputStream driveRobotOriented = driveAngularVelocity.copy().robotRelative(true)
                                                                       .allianceRelativeControl(false);
-
-  SwerveInputStream driveAngularVelocityKeyboard = SwerveInputStream.of(drivetrain.getSwerveDrive(),
-                                                              () -> -driverCtrl.getLeftY(), 
-                                                              () -> -driverCtrl.getLeftX())
-                                                              .withControllerRotationAxis(() -> driverCtrl.getRawAxis(2))
-                                                              .deadband(SwerveConstants.deadband)
-                                                              .scaleTranslation(0.8)
-                                                              .allianceRelativeControl(true);
-
-                                                              SwerveInputStream driveDirectAngleKeyboard = driveAngularVelocityKeyboard.copy()
-                                                                            .withControllerHeadingAxis(() ->
-                                                                                                            Math.sin(
-                                                                                                                driverCtrl.getRawAxis(
-                                                                                                                    2) *
-                                                                                                                Math.PI) *
-                                                                                                            (Math.PI *
-                                                                                                              2),
-                                                                                                        () ->
-                                                                                                            Math.cos(
-                                                                                                                driverCtrl.getRawAxis(
-                                                                                                                    2) *
-                                                                                                                Math.PI) *
-                                                                                                              (Math.PI *
-                                                                                                              2))
-                                                                            .headingWhile(true)
-                                                                            .translationHeadingOffset(true)
-                                                                            .translationHeadingOffset(Rotation2d.fromDegrees(
-                                                                                0));
   
   public RobotContainer() {
     configureBindings();
@@ -100,15 +78,10 @@ public class RobotContainer {
     // Command driveFieldOrientedDirectAngle = drivetrain.driveFieldOriented(driveDirectAngle);
     Command driveFieldOrientedAnglularVelocity = drivetrain.driveFieldOriented(driveAngularVelocity);
     // Command driveRobotOrientedAngularVelocity = drivetrain.driveFieldOriented(driveRobotOriented);
-    // Command driveFieldOrientedDirectAngleKeyboard = drivetrain.driveFieldOriented(driveDirectAngleKeyboard);
-    Command driveFieldOrientedAnglularVelocityKeyboard = drivetrain.driveFieldOriented(driveAngularVelocityKeyboard);
 
-    if(Robot.isSimulation()){
-      drivetrain.setDefaultCommand(driveFieldOrientedAnglularVelocityKeyboard);
-    }
-    else{
-      drivetrain.setDefaultCommand(driveFieldOrientedAnglularVelocity);
-    }
+    
+    drivetrain.setDefaultCommand(driveFieldOrientedAnglularVelocity);
+    
 
     //Example Intake Roller Bindings
     operatorCtrl.a().whileTrue(intakeRollers.setVoltageCmd(Volts.of(6)));
@@ -133,6 +106,8 @@ public class RobotContainer {
     //                 // Kicker and other stuff
     //                 indexer.setVoltageCmd(Volts.of(6))))
     //         .withName("ShootCmd"));
+
+    //TODO configure other bindings after zain gives button map
   }
 
   public Command getAutonomousCommand() {
