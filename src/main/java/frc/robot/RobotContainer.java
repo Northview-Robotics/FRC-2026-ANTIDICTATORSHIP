@@ -36,7 +36,7 @@ public class RobotContainer {
   private final CommandXboxController operatorCtrl = new CommandXboxController(1);
 
   private final IntakeRollers intakeRollers = new IntakeRollers(Constants.IntakeRollersConstants.intakeRollerID, Constants.IntakeRollersConstants.gearRatio);
-  private final IntakeAngle intakeAngle = new IntakeAngle(Constants.IntakePivotConstants.intakePivotID, Constants.IntakePivotConstants.gearRatio);
+  private final IntakeAngle intakeAngle = new IntakeAngle(Constants.IntakePivotConstants.intakePivotID);
   private final Indexer indexer = new Indexer(Constants.IndexerConstants.indexerID, Constants.IndexerConstants.gearRatio);
   private final Feeder feeder = new Feeder(Constants.FeederConstants.feederID, Constants.FeederConstants.gearRatio);
   private final ShooterWheel shooterWheel = new ShooterWheel(Constants.ShooterWheelConstants.shooterMotor1ID,
@@ -44,7 +44,7 @@ public class RobotContainer {
                                                           Constants.ShooterWheelConstants.shooterMotor3ID, 
                                                           Constants.ShooterWheelConstants.shooterMotor4ID,
                                                           Constants.ShooterWheelConstants.gearRatio);
-  private final Hood hood = new Hood(Constants.HoodConstants.hoodID, Constants.HoodConstants.gearRatio);
+  private final Hood hood = new Hood(Constants.HoodConstants.hoodID);
 
   private File directory = new File(Filesystem.getDeployDirectory(),"swerve2");
   private final Drive drivetrain = new Drive(directory);

@@ -82,7 +82,8 @@ public final class Constants {
 
     public final static class IntakePivotConstants{
         public static final int intakePivotID = 53;
-        public static final double gearRatio = 47.5308642;
+        public static final double positionConversionFactor = 360.0/47.5308642;
+        public static final double velocityConversionFactor = 360.0/47.5308642/60.0;
 
         //TODO PLEASE FIND THE POSITION THAT'S ON THE UPPER HARD STOP. Run a test where you zero the angle at fully delpoyed intake.
         //Honestly, just contact Hangyul when you're about to find this value.
@@ -165,7 +166,8 @@ public final class Constants {
 
     public final static class HoodConstants{
         public static final int hoodID = 46;
-        public static final double gearRatio = 100.0/1.0;
+        public static final double positionConversionFactor = 360.0/1250.0;
+        public static final double velocityConversionFactor = 360.0/1250.0/60.0;
 
         //TODO run a test where you zero the angle when hood is fully retracted.
         public static final Angle resetAngle = Degrees.of(0);

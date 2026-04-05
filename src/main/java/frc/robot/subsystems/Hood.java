@@ -52,13 +52,13 @@ public class Hood extends SubsystemBase{
         new SysIdRoutine.Mechanism(this::setVoltage, null, this)
     );
 
-    public Hood(int canid, double gearRatio){
+    public Hood(int canid){
         motor = new SparkMax(canid, com.revrobotics.spark.SparkBase.MotorType.kBrushless);
         closedLoopController = motor.getClosedLoopController();
 
         config.encoder
-            .velocityConversionFactor(1.0/gearRatio)
-            .positionConversionFactor(1.0/gearRatio);
+            .velocityConversionFactor(Constants.HoodConstants.velocityConversionFactor)
+            .positionConversionFactor(Constants.HoodConstants.positionConversionFactor);
 
         //Don't use for actual PID Calculations, only for config values.
         PIDController velocityPID = Constants.HoodConstants.velocityPID;

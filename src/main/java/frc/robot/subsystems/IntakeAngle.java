@@ -51,13 +51,13 @@ public class IntakeAngle extends SubsystemBase{
         new SysIdRoutine.Mechanism(this::setVoltage, null, this)
     );
 
-    public IntakeAngle(int canId, double gearRatio){
+    public IntakeAngle(int canId){
         motor = new SparkMax(canId, MotorType.kBrushless);
         closedLoopController = motor.getClosedLoopController();
         
         config.encoder
-            .velocityConversionFactor(1.0/gearRatio)
-            .positionConversionFactor(1.0/gearRatio);
+            .velocityConversionFactor(Constants.IntakePivotConstants.velocityConversionFactor)
+            .positionConversionFactor(Constants.IntakePivotConstants.positionConversionFactor);
         
         //Don't use for actual PID Calculations, only for config values.
         PIDController velocityPID = Constants.IntakePivotConstants.velocityPID;
