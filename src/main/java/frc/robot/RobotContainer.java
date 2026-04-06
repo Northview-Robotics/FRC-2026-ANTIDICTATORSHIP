@@ -77,11 +77,11 @@ public class RobotContainer {
     // Command driveFieldOrientedDirectAngle = drivetrain.driveFieldOriented(driveDirectAngle);
     Command driveFieldOrientedAnglularVelocity = drivetrain.driveFieldOriented(driveAngularVelocity);
     // Command driveRobotOrientedAngularVelocity = drivetrain.driveFieldOriented(driveRobotOriented);
-
+    Command driveHubAlign = drivetrain.driveAlignedHubCommand(driveAngularVelocity);
     
     drivetrain.setDefaultCommand(driveFieldOrientedAnglularVelocity);
+    driverCtrl.a().whileTrue(driveHubAlign);
     
-
     //Example Intake Roller Bindings
     operatorCtrl.a().whileTrue(intakeRollers.setVoltageCmd(Volts.of(6)));
     operatorCtrl.b().whileTrue(intakeRollers.setVoltageCmd(Volts.of(-6)));

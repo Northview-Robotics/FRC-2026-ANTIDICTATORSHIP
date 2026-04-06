@@ -23,6 +23,7 @@ import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine.Config;
 import frc.robot.Constants.SwerveConstants;
+import frc.robot.subsystems.vision.AutoAlign;
 import frc.robot.subsystems.vision.Vision;
 
 //Yagsl
@@ -204,23 +205,24 @@ public class Drive extends SubsystemBase
                         false);
     });
   }
-  
-//   public void driveAlignedHub(DoubleSupplier translationX, DoubleSupplier translationY)
-//   {
-//     AutoAlign align = AutoAlign.getInstance();
-//     double xVelocity = xLim.calculate(MathUtil.applyDeadband(translationX.getAsDouble(), SwerveConstants.deadband));
-//     double yVelocity = yLim.calculate(MathUtil.applyDeadband(translationY.getAsDouble(), SwerveConstants.deadband));
-//     Rotation2d hubHeading = align.getHubHeading();
-//     double angularVel = swerveDrive.getSwerveController().headingCalculate(swerveDrive.getOdometryHeading().getRadians(), hubHeading.getRadians());
 
-//       // Make the robot move
-//         swerveDrive.drive(SwerveMath.scaleTranslation(new Translation2d(
-//                             xVelocity * swerveDrive.getMaximumChassisVelocity(),
-//                             yVelocity * swerveDrive.getMaximumChassisVelocity()), 0.8),
-//                         Math.pow(angularVel, 3) * swerveDrive.getMaximumChassisAngularVelocity(),
-//                         true,
-//                         false);
-//   }
+  public Command driveAlignedHubCommand(DoubleSupplier translationX, DoubleSupplier translationY)
+  {
+    AutoAlign align = AutoAlign.getInstance();
+    double xVelocity = xLim.calculate(MathUtil.applyDeadband(translationX.getAsDouble(), SwerveConstants.deadband));
+    double yVelocity = yLim.calculate(MathUtil.applyDeadband(translationY.getAsDouble(), SwerveConstants.deadband));
+    Rotation2d hubHeading = align.getHubHeading();
+    double angularVelocity = swerveDrive.getSwerveController().headingCalculate(swerveDrive.getOdometryHeading().getRadians(), hubHeading.getRadians());
+
+    return run(() -> {
+    swerveDrive.drive(SwerveMath.scaleTranslation(new Translation2d(
+                        Math.pow(xVelocity,3) * swerveDrive.getMaximumChassisVelocity(),
+                        Math.pow(yVelocity, 3) * swerveDrive.getMaximumChassisVelocity()), 0.8),
+                        Math.pow(angularVelocity, 3) * swerveDrive.getMaximumChassisAngularVelocity(),
+                        true,
+                        false);
+    });
+  }
 
   public void drive(Translation2d translation, double rotation, boolean fieldRelative)
   {
@@ -239,6 +241,23 @@ public class Drive extends SubsystemBase
   {
     return run(() -> {
       swerveDrive.driveFieldOriented(velocity.get());
+    });
+  }
+
+  //idk if this will work
+  public Command driveAlignedHubCommand(Supplier<ChassisSpeeds> velocity)
+  {
+    AutoAlign align = AutoAlign.getInstance();
+    Rotation2d hubHeading = align.getHubHeading();
+    double angularVel = swerveDrive.getSwerveController().headingCalculate(swerveDrive.getOdometryHeading().getRadians(), hubHeading.getRadians());
+    ChassisSpeeds targetSpeeds = velocity.get();
+    ChassisSpeeds adjustedSpeeds = new ChassisSpeeds(
+      targetSpeeds.vxMetersPerSecond,
+      targetSpeeds.vyMetersPerSecond,
+      angularVel
+    );
+    return run(() -> {
+      swerveDrive.driveFieldOriented(adjustedSpeeds);
     });
   }
 
